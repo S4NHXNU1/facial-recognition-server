@@ -20,7 +20,7 @@ This project is a Flask-based authentication server that uses facial recognition
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/facial-recognition-server.git
+git clone https://github.com/s4nhxnu1/facial-recognition-server.git
 cd facial-recognition-server
 ```
 
