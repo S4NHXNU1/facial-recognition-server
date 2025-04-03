@@ -38,7 +38,7 @@ pip install flask flask_cors facenet_pytorch
 
 ## Running the Server
 
-### 1. Start the Flask Application
+### Start the Flask Application
 
 ```bash
 python app.py
