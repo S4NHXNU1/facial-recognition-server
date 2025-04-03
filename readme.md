@@ -14,6 +14,7 @@ This project is a Flask-based authentication server that uses facial recognition
 - Flask
 - facenet\_pytorch
 - flask\_cors
+- flask-sqlalchemy
 
 ## Installation
 
@@ -33,7 +34,7 @@ conda create -n <yourEnvName> python=3.12 -y
 ### 3. Install Dependencies
 
 ```bash
-pip install flask flask_cors facenet_pytorch
+pip install flask flask_cors facenet_pytorch flask-sqlalchemy
 ```
 
 ## Running the Server
