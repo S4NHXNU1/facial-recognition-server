@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.faceScanServices import StoreEmbedding
+from services.faceScanServices import StoreEmbedding, CompareEmbedding
 
 scan = Blueprint("scan", __name__, url_prefix="/scan")
 
@@ -22,4 +22,9 @@ def match():
     username = data["username"]
     face_ebase64 = data["face_base64"]
 
-    return jsonify({"message": "matched"}), 200
+    res, matches = CompareEmbedding(username, face_ebase64)
+
+    if not res:
+        return jsonify({"message": f"unmatched ({matches}%)"}), 401
+
+    return jsonify({"message": f"matched ({matches}%)"}), 200

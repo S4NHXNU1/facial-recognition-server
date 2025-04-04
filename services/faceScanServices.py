@@ -56,3 +56,34 @@ def StoreEmbedding(username, faces_base64):
         return False
     
     return True
+
+def ConvertB64Embedding(face_base64):
+    print("decoding base64 string")
+    image_data = base64.b64decode(face_base64)
+    img = Image.open(io.BytesIO(image_data)).resize((256, 256))
+
+    print("converting images to tensors")
+    img_tensor = torch.tensor(np.array(img) / 255.).permute(2, 0, 1).unsqueeze(0).float()
+
+    print("generating embeddings")
+    with torch.no_grad():
+        embedding = model(img_tensor.to(device))
+
+    np_embedding = embedding.cpu().numpy().flatten()
+    return np_embedding
+
+def CompareEmbedding(username, face_base64):
+    res = GetEmbedding(username)
+
+    if res == 0:
+        return False, 0
+    
+    storedEmbedding = json.loads(res)
+    embedding = ConvertB64Embedding(face_base64)
+
+    matches = cosine_similarity(storedEmbedding, embedding)
+
+    if matches < 0.85:
+        return False, np.round(matches, 3)*100
+
+    return True, np.round(matches, 3)*100
