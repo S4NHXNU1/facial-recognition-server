@@ -1,4 +1,5 @@
 from models.model import db, User
+import bcrypt
 
 def InsertUser(username, password):
     new_user = User(username=username, password=password, face_embedding=None)
@@ -12,9 +13,15 @@ def InsertUser(username, password):
         return 0
     
 def AuthorizeUser(username, password):
-    user = User.query.where((User.username == username) & (User.password == password)).first()
+    user = User.query.where((User.username == username)).first()
 
     if user is None:
+        return 0
+    
+    storedPassword = user.password
+    validPassword = bcrypt.checkpw(password.encode('utf-8'), storedPassword .encode('utf-8'))
+
+    if not validPassword:
         return 0
     
     return 1

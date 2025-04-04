@@ -7,6 +7,7 @@ This project is a Flask-based authentication server that uses facial recognition
 - User authentication using facial recognition.
 - REST API for handling authentication requests.
 - CORS support for cross-origin requests.
+- Bcrypt utilization for password hashing and storage.
 
 ## Technologies Used
 
@@ -15,6 +16,7 @@ This project is a Flask-based authentication server that uses facial recognition
 - facenet\_pytorch
 - flask\_cors
 - flask-sqlalchemy
+- bcrypt
 
 ## Installation
 
@@ -34,7 +36,7 @@ conda create -n <yourEnvName> python=3.12 -y
 ### 3. Install Dependencies
 
 ```bash
-pip install flask flask_cors facenet_pytorch flask-sqlalchemy
+pip install flask flask_cors facenet_pytorch flask-sqlalchemy bcrypt
 ```
 
 ## Running the Server
