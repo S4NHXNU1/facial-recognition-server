@@ -12,7 +12,7 @@ def InsertUser(username, password):
         return 0
     
 def AuthorizeUser(username, password):
-    user = User.query.where(User.username == username and User.password == password).first()
+    user = User.query.where((User.username == username) & (User.password == password)).first()
 
     if user is None:
         return 0
