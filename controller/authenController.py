@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from services.authenServices import Auth, AddUser
 
-auth = Blueprint("auth", __name__, url_prefix="/auth")
+auth = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 @auth.route("/login", methods=["POST"])
 def login():

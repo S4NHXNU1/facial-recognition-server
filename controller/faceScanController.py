@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from services.faceScanServices import StoreEmbedding, CompareEmbedding
 
-scan = Blueprint("scan", __name__, url_prefix="/scan")
+scan = Blueprint("scan", __name__, url_prefix="/api/scan")
 
 @scan.route("/register", methods=["POST"])
 def register():
