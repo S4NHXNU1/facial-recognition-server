@@ -11,6 +11,8 @@ import io
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 model = InceptionResnetV1(pretrained='vggface2').to(device).eval()
 
+print(f"Using device: {device}")
+
 def cosine_similarity(emb1, emb2):
     emb1 = torch.tensor(emb1)
     emb2 = torch.tensor(emb2)

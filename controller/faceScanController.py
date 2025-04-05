@@ -20,9 +20,9 @@ def register():
 def match():
     data = request.json
     username = data["username"]
-    face_ebase64 = data["face_base64"]
+    face_base64 = data["face_base64"]
 
-    res, matches = CompareEmbedding(username, face_ebase64)
+    res, matches = CompareEmbedding(username, face_base64)
 
     if not res:
         return jsonify({"message": f"unmatched ({matches}%)"}), 401
