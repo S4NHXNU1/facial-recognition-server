@@ -1,6 +1,7 @@
 from repository.userRepository import UpdateEmbedding, GetEmbedding
 from facenet_pytorch import InceptionResnetV1
 import torch.nn.functional as F
+from torchvision import transforms
 import torch
 from PIL import Image
 import numpy as np
@@ -10,8 +11,20 @@ import io
 
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 model = InceptionResnetV1(pretrained='vggface2').to(device).eval()
+torch.manual_seed(42)
 
 print(f"Using device: {device}")
+
+transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4),
+    transforms.RandomRotation(degrees=10),
+    transforms.RandomAffine(degrees=0, translate=(0.02, 0.02), scale=(0.95, 1.05)),
+    transforms.RandomPerspective(distortion_scale=0.3, p=0.5),
+    transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0)),
+    transforms.ToTensor(),
+    transforms.RandomErasing(p=0.3, scale=(0.02, 0.1), ratio=(0.3, 3.3), value='random'),
+])
 
 def cosine_similarity(emb1, emb2):
     emb1 = torch.tensor(emb1)
@@ -19,32 +32,37 @@ def cosine_similarity(emb1, emb2):
     return F.cosine_similarity(emb1.unsqueeze(0), emb2.unsqueeze(0)).item()
 
 def generateEmbedding(faces_base64):
-    print("decoding base64 strings")
-    image_data_1 = base64.b64decode(faces_base64[0])
-    image_data_2 = base64.b64decode(faces_base64[1])
-    image_data_3 = base64.b64decode(faces_base64[2])
+    print("Decoding base64 strings")
+    images = [
+        Image.open(io.BytesIO(base64.b64decode(data))).resize((256, 256))
+        for data in faces_base64[:3]
+    ]
 
-    img1 = Image.open(io.BytesIO(image_data_1)).resize((256, 256))
-    img2 = Image.open(io.BytesIO(image_data_2)).resize((256, 256))
-    img3 = Image.open(io.BytesIO(image_data_3)).resize((256, 256))
+    print("Converting images to raw tensors")
+    raw_tensors = [
+        torch.tensor(np.array(img) / 255.).permute(2, 0, 1).unsqueeze(0).float()
+        for img in images
+    ]
 
-    print("converting images to tensors")
-    img1_tensor = torch.tensor(np.array(img1) / 255.).permute(2, 0, 1).unsqueeze(0).float()
-    img2_tensor = torch.tensor(np.array(img2) / 255.).permute(2, 0, 1).unsqueeze(0).float()
-    img3_tensor = torch.tensor(np.array(img3) / 255.).permute(2, 0, 1).unsqueeze(0).float()
+    print("Applying data augmentation")
+    augmented_tensors = []
+    augmented_num_per_img = 40
+    for img in images:
+        augmented_tensors.extend([
+            transform(img).unsqueeze(0).float()
+            for _ in range(augmented_num_per_img)
+        ])
 
-    print("generating embeddings")
+    print("Combining all tensors")
+    all_tensors = raw_tensors + augmented_tensors
+
+    print("Generating embeddings")
     with torch.no_grad():
-        embedding1 = model(img1_tensor.to(device))
-        embedding2 = model(img2_tensor.to(device))
-        embedding3 = model(img3_tensor.to(device))
+        embeddings = [model(tensor.to(device)) for tensor in all_tensors]
 
-    np_embedding1 = embedding1.cpu().numpy().flatten()
-    np_embedding2 = embedding2.cpu().numpy().flatten()
-    np_embedding3 = embedding3.cpu().numpy().flatten()
-
-    embedding_median = np.median([np_embedding1, np_embedding2, np_embedding3], axis=0).flatten()
-    embedding_list = np.round(embedding_median.flatten(), 3).tolist()
+    np_embeddings = [embedding.cpu().numpy().flatten() for embedding in embeddings]
+    embedding_median = np.median(np_embeddings, axis=0)
+    embedding_list = np.round(embedding_median, 3).tolist()
     embedding_str = json.dumps(embedding_list)
 
     return embedding_str
